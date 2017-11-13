@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:id="@+id/parentLayout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.tanseersaji.launcher.MainActivity"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <LinearLayout
+                android:id="@+id/appBar"
+                android:layout_width="60dp"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <Button
+                    android:id="@+id/contact"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:background="@drawable/contact" />
+
+                <Button
+                    android:id="@+id/message"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:background="@drawable/message"
+                    android:elevation="5dp"/>
+
+                <Button
+                    android:id="@+id/google"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:background="@drawable/google"
+                    android:elevation="5dp" />
+
+                <Button
+                    android:id="@+id/camera"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:background="@drawable/camera" />
+
+                <Button
+                    android:id="@+id/gallery"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:background="@drawable/gallery"
+                    android:elevation="5dp" />
+
+                <Button
+                    android:id="@+id/more"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:background="@drawable/allapps"
+                    android:elevation="5dp" />
+
+                <Button
+                    android:id="@+id/playStore"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:layout_margin="5dp"
+                    android:background="@drawable/playstore"
+                    android:elevation="5dp" />
+
+                <Button
+                    android:id="@+id/wallbucket"
+                    android:layout_width="53dp"
+                    android:layout_height="53dp"
+                    android:background="@drawable/wallbucket"
+                    android:elevation="5dp" />
+
+                <Button
+                    android:id="@+id/clean"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:background="@drawable/clean"
+                    android:elevation="5dp" />
+
+            </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/dateTimeLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginLeft="20dp"
+        android:padding="20dp"
+        android:background="@drawable/border_radius_solid_white"
+        android:elevation="4dp">
+        <TextView
+            android:id="@+id/clockk"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="9:43 AM"
+            android:textSize="48dp"
+            android:textAlignment="center"
+            android:textColor="#2c3e50" />
+        <TextView
+            android:id="@+id/date"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="DATE"
+            android:textAlignment="center"
+            android:textSize="18dp"
+            android:textStyle="bold"
+            android:textColor="#2c3e50" />
+    </LinearLayout>
+
+</LinearLayout>
