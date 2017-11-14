@@ -23,10 +23,16 @@
 package com.tanseersaji.launcher;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 
 import com.google.android.gms.ads.AdListener;
@@ -35,6 +41,7 @@ import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.ads.MobileAds;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static com.tanseersaji.launcher.MainActivity.openApp;
 
@@ -43,19 +50,23 @@ public class AppListActivity extends Activity {
     private RecyclerView list;
     private AppListActivity context = AppListActivity.this;
     private InterstitialAd mInterstitialAd;
+    private ArrayList<ResolveInfo> apps = new ArrayList<ResolveInfo>();
+    private static AppListActivity appListActivity = new AppListActivity();
+    private static PackageManager manager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_app_list);
 
-
         list = findViewById(R.id.list);
 
-        AppListAdaptor adaptor = new AppListAdaptor( MainActivity.apps);
+        getAppsList();
+
+        AppListAdaptor adaptor = new AppListAdaptor(apps);
         list.setAdapter(adaptor);
 
-        GridLayoutManager glm = new GridLayoutManager(this,3);
+        GridLayoutManager glm = new GridLayoutManager(this, 3);
         list.setLayoutManager(glm);
 
         addClickListener();
@@ -71,9 +82,9 @@ public class AppListActivity extends Activity {
 
     }
 
+    private void addClickListener() {
 
-    private void addClickListener(){
-        list.addOnItemTouchListener(new RecyclerItemClickListener(this,new RecyclerItemClickListener.OnItemClickListener() {
+        list.addOnItemTouchListener(new RecyclerItemClickListener(this, new RecyclerItemClickListener.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
 
@@ -84,7 +95,7 @@ public class AppListActivity extends Activity {
                     if (mInterstitialAd.isLoaded()) {
                         mInterstitialAd.show();
                     } else {
-                        openApp(AppListActivity.this,  MainActivity.apps.get(position).getLabel().toString());
+                        openApp(AppListActivity.this, apps.get(position).activityInfo.packageName);
                     }
 
                     mInterstitialAd.setAdListener(new AdListener() {
@@ -93,18 +104,14 @@ public class AppListActivity extends Activity {
                         public void onAdClosed() {
                             mInterstitialAd.loadAd(new AdRequest.Builder()
                                     .build());
-                            openApp(AppListActivity.this,  MainActivity.apps.get(position).getLabel().toString());
-                            MainActivity.apps.clear();
-                            finish();
+                            openApp(AppListActivity.this, apps.get(position).activityInfo.packageName);
                         }
                     });
 
-                }else{
-                    openApp(AppListActivity.this,  MainActivity.apps.get(position).getLabel().toString());
-                    MainActivity.apps.clear();
-                    finish();
+                } else {
+                    openApp(AppListActivity.this, apps.get(position).activityInfo.packageName);
                 }
-                editor.putInt("AdCount",(sharedPreferences.getInt("AdCount", 0)+1)%10);
+                editor.putInt("AdCount", (sharedPreferences.getInt("AdCount", 0) + 1) % 10);
                 editor.apply();
             }
 
@@ -112,26 +119,22 @@ public class AppListActivity extends Activity {
         }));
     }
 
-    private ArrayList<Item> getApps(){
-        ArrayList<Item> appList = new ArrayList<Item>();
-         Item it;
 
-         for(int i = 0;i< MainActivity.apps.size();i++){
-             it = new Item();
-             it.setName( MainActivity.apps.get(i).getName());
-             it.setIcon( MainActivity.apps.get(i).getIcon());
-             it.setLabel( MainActivity.apps.get(i).getLabel());
-
-             appList.add(it);
-
-         }
-        return appList;
+    private void getAppsList(){
+        long t0 = System.currentTimeMillis();
+        manager = getPackageManager();
+        Intent i = new Intent(Intent.ACTION_MAIN,null);
+        i.addCategory(Intent.CATEGORY_LAUNCHER);
+        ArrayList<ResolveInfo> availableActivities = (ArrayList<ResolveInfo>) manager.queryIntentActivities(i,0);
+        apps = availableActivities;
+        Log.i("PLUM",String.valueOf(System.currentTimeMillis() - t0));
     }
 
-
-
-    public  Context getInstance(){
-        return context;
+    public static AppListActivity getInstance(){
+     return appListActivity;
     }
 
+    public static PackageManager getPM(){
+        return manager;
     }
+}

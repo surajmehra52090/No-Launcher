@@ -44,7 +44,6 @@ public class HelperActivity extends Activity {
     ToggleButton showClock;
     Button settingButton;
     private AdView mAdView;
-    private FirebaseAnalytics mFirebaseAnalytics;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,7 +54,6 @@ public class HelperActivity extends Activity {
         mAdView = findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder().build();
         mAdView.loadAd(adRequest);
-        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
 
         SharedPreferences sharedPreferences = getSharedPreferences("NoLauncherSettings", Context.MODE_PRIVATE);
         showAppBar = findViewById(R.id.showAppBar);
@@ -86,6 +84,7 @@ public class HelperActivity extends Activity {
                 final Intent intent = new Intent(Settings.ACTION_SETTINGS);
                 startActivity(intent);
             }
+            finish();
         }
 
         SharedPreferences.Editor editor = sharedPreferences.edit();

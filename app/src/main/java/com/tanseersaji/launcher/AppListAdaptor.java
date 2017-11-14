@@ -22,8 +22,11 @@
 
 package com.tanseersaji.launcher;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -38,7 +41,7 @@ import java.util.ArrayList;
 
 public class AppListAdaptor extends RecyclerView.Adapter<AppListAdaptor.MyViewHolder>  {
 
-    ArrayList<Item> apps;
+    ArrayList<ResolveInfo> apps;
     Context context;
 
     class MyViewHolder extends RecyclerView.ViewHolder{
@@ -54,7 +57,7 @@ public class AppListAdaptor extends RecyclerView.Adapter<AppListAdaptor.MyViewHo
         }
     }
 
-    public AppListAdaptor(ArrayList<Item> apps){
+    public AppListAdaptor(ArrayList<ResolveInfo> apps){
         this.apps = apps;
     }
 
@@ -67,29 +70,19 @@ public class AppListAdaptor extends RecyclerView.Adapter<AppListAdaptor.MyViewHo
 
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
-        Item app = apps.get(position);
-        holder.name.setText(app.getName());
-        holder.icon.setImageDrawable(app.getIcon());
+        ResolveInfo app = apps.get(position);
+        holder.name.setText(app.activityInfo.loadLabel(AppListActivity.getPM()));
+        holder.icon.setImageDrawable(app.activityInfo.loadIcon(AppListActivity.getPM()));
 
-        holder.v.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-
-                    Uri packageURI = Uri.parse("package:" + apps.get(position).getLabel().toString());
-                    Intent i = new Intent(Intent.ACTION_UNINSTALL_PACKAGE, packageURI);
-                    context.startActivity(i);
-
-                return true;
-            }
+        holder.v.setOnLongClickListener(view -> {
+            Uri packageURI = Uri.parse("package:" + apps.get(position).activityInfo.packageName);
+            Intent i = new Intent(Intent.ACTION_UNINSTALL_PACKAGE, packageURI);
+            context.startActivity(i);
+            return true;
         });
-
     }
-
     @Override
     public int getItemCount() {
         return apps.size();
     }
-
-
-
 }
