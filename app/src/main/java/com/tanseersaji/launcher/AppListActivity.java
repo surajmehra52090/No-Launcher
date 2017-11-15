@@ -27,6 +27,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
@@ -39,10 +40,11 @@ import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.ads.MobileAds;
+import com.yarolegovich.lovelydialog.LovelyProgressDialog;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-
 import static com.tanseersaji.launcher.MainActivity.openApp;
 
 public class AppListActivity extends Activity {
@@ -52,25 +54,23 @@ public class AppListActivity extends Activity {
     private ArrayList<ResolveInfo> apps = new ArrayList<ResolveInfo>();
     private static PackageManager manager;
     LinearLayout appDrawerLayout;
-
+    LovelyProgressDialog loadAppDialog;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_app_list);
 
         appDrawerLayout = findViewById(R.id.appDrawerLayout);
+        loadAppDialog = new LovelyProgressDialog(this);
 
         list = findViewById(R.id.list);
 
         long t0 = System.currentTimeMillis();
-        getAppsList();
-        AppListAdaptor adaptor = new AppListAdaptor(apps);
-        list.setAdapter(adaptor);
-        GridLayoutManager glm = new GridLayoutManager(this, 3);
-        list.setLayoutManager(glm);
+
+        new LoadApps().execute();
+
         Log.i("PLUM",String.valueOf((System.currentTimeMillis()-t0)));
 
-        addClickListener();
 
         MobileAds.initialize(this, "ca-app-pub-6440435975761242~6952366562");
 
@@ -86,6 +86,7 @@ public class AppListActivity extends Activity {
                 finish();
             }
         });
+
     }
 
 
@@ -126,7 +127,6 @@ public class AppListActivity extends Activity {
         }));
     }
 
-
     private void getAppsList(){
 
         manager = getPackageManager();
@@ -141,24 +141,44 @@ public class AppListActivity extends Activity {
             }
         });
     }
-
-
     @Override
     protected void onPause() {
         super.onPause();
         PowerManager p = (PowerManager) getSystemService(Context.POWER_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-            if(!p.isInteractive()){
-                System.gc();
-            }
-        }else {
-            if(!p.isScreenOn()){
-                System.gc();
-            }
-        }
-    }
-
+            if(!p.isInteractive()){System.gc();}}else {if(!p.isScreenOn()){System.gc();}}}
     public static PackageManager getPM(){
         return manager;
+    }
+
+    class LoadApps extends AsyncTask<Void,Void,Void>{
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            loadAppDialog.setTitle("Loading Apps")
+                    .setTopColor(getResources().getColor(R.color.colorPrimaryDark))
+                    .setIcon(getResources().getDrawable(R.drawable.loading))
+                    .setIconTintColor(getResources().getColor(R.color.appBarColor))
+                    .setMessage("Your Apps are being sorted in alphabetical order, Be Calm")
+                    .show();
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            AppListAdaptor adaptor = new AppListAdaptor(apps);
+            list.setAdapter(adaptor);
+            GridLayoutManager glm = new GridLayoutManager(AppListActivity.this, 3);
+            list.setLayoutManager(glm);
+            addClickListener();
+            loadAppDialog.dismiss();
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            getAppsList();
+            return null;
+        }
     }
 }

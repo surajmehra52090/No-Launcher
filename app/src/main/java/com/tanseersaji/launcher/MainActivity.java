@@ -31,25 +31,38 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
+import android.os.PowerManager;
 import android.provider.AlarmClock;
 import android.provider.MediaStore;
 import android.os.Bundle;
+import android.service.notification.StatusBarNotification;
+import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.github.nisrulz.sensey.Sensey;
+import com.github.nisrulz.sensey.TouchTypeDetector;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.ads.MobileAds;
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.yarolegovich.lovelydialog.LovelyInfoDialog;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import hotchemi.android.rate.AppRate;
+import hotchemi.android.rate.OnClickButtonListener;
 
 public class MainActivity extends Activity {
 
@@ -64,6 +77,7 @@ public class MainActivity extends Activity {
     Button wallBucketButton;
     Button cleanButton;
     LinearLayout appBar;
+    LinearLayout parentLayout;
     LinearLayout dateTime;
     SimpleDateFormat simpleDateFormat;
     String time;
@@ -73,6 +87,7 @@ public class MainActivity extends Activity {
     TextView timeTextView;
     TextView dateTextView;
     FirebaseAnalytics mFirebaseAnalytics;
+    SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,7 +98,7 @@ public class MainActivity extends Activity {
          dateTextView = findViewById(R.id.date);
 
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
-
+        sharedPreferences = getSharedPreferences("NoLauncherSettings", Context.MODE_PRIVATE);
         t.scheduleAtFixedRate(new MyTimerClass(),0,1000);
 
 
@@ -103,8 +118,6 @@ public class MainActivity extends Activity {
             }
         });
 
-        Glide.get(this).clearMemory();
-
          contactButton = (Button) findViewById(R.id.contact);
          messageButton = (Button) findViewById(R.id.message);
          googleButton = (Button) findViewById(R.id.google);
@@ -116,7 +129,30 @@ public class MainActivity extends Activity {
          cleanButton = (Button) findViewById(R.id.clean);
          appBar = (LinearLayout) findViewById(R.id.appBar);
          dateTime = (LinearLayout) findViewById(R.id.dateTimeLayout);
+         parentLayout = (LinearLayout) findViewById(R.id.parentLayout);
 
+        Sensey.getInstance().init(MainActivity.this);
+
+
+        AppRate.with(this)
+                .setInstallDays(3)
+                .setLaunchTimes(20)
+                .setRemindInterval(2)
+                .setShowLaterButton(true)
+                .setShowNeverButton(true)
+                .monitor();
+
+        AppRate.showRateDialogIfMeetsConditions(MainActivity.this);
+
+        new LovelyInfoDialog(MainActivity.this)
+                .setTitle("No Launcher Tutorial")
+                .setMessage("1. Swipe Up to open App Drawer\n2. You can customize Gesture Apps by long pressing the App Icon in the app drawer and choosing appropriate option\n" +
+                        "You can change Gesture Apps by selecting another app for a particular Gesture")
+                .setIcon(getResources().getDrawable(R.drawable.logo))
+                .setTopColor(getResources().getColor(R.color.colorPrimaryDark))
+                .setNotShowAgainOptionEnabled(0)
+                .setNotShowAgainOptionChecked(false)
+                .show();
 
         dateTime.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -132,6 +168,7 @@ public class MainActivity extends Activity {
                  startActivity(i);
              }
          });
+
         wallBucketButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view)
@@ -202,12 +239,106 @@ public class MainActivity extends Activity {
                 startActivity(galleryIntent);
             }
         });
+
+        TouchTypeDetector.TouchTypListener touchTypeDetector = new TouchTypeDetector.TouchTypListener(){
+
+            @Override
+            public void onTwoFingerSingleTap() {
+                if(sharedPreferences.contains("sia2")){
+                    Log.i("PLUM",sharedPreferences.getString("sia2",""));
+                    openApp(MainActivity.this,sharedPreferences.getString("sia2",""));
+                }
+            }
+
+            @Override
+            public void onThreeFingerSingleTap() {
+
+
+            }
+
+            @Override
+            public void onDoubleTap() {
+                if(sharedPreferences.contains("sia1")){
+                    Log.i("PLUM",sharedPreferences.getString("sia1",""));
+                    openApp(MainActivity.this,sharedPreferences.getString("sia1",""));
+                }
+            }
+
+            @Override
+            public void onScroll(int i) {
+
+            }
+
+            @Override
+            public void onSingleTap() {
+
+            }
+
+            @Override
+            public void onSwipe(int i) {
+                if(i == TouchTypeDetector.SWIPE_DIR_UP){
+                    Intent intent = new Intent(getApplicationContext(),AppListActivity.class);
+                    startActivity(intent);
+                }
+                if(i == TouchTypeDetector.SWIPE_DIR_RIGHT){
+                    if(sharedPreferences.contains("rsa")){
+                        Log.i("PLUM",sharedPreferences.getString("rsa",""));
+                        openApp(MainActivity.this,sharedPreferences.getString("rsa",""));
+                    }
+                }
+                if(i == TouchTypeDetector.SWIPE_DIR_LEFT){
+                    if(sharedPreferences.contains("lsa")){
+                        Log.i("PLUM",sharedPreferences.getString("lsa",""));
+                        openApp(MainActivity.this,sharedPreferences.getString("lsa",""));
+                    }
+                }
+                if(i == TouchTypeDetector.SWIPE_DIR_DOWN){
+                    if(sharedPreferences.contains("dsa")){
+                        Log.i("PLUM",sharedPreferences.getString("dsa",""));
+                        openApp(MainActivity.this,sharedPreferences.getString("dsa",""));
+                    }
+                }
+            }
+
+            @Override
+            public void onLongPress() {
+
+            }
+        };
+
+        Sensey.getInstance().startTouchTypeDetection(MainActivity.this,touchTypeDetector);
     }
+    @Override public boolean dispatchTouchEvent(MotionEvent event) {
+        // Setup onTouchEvent for detecting type of touch gesture
+        Sensey.getInstance().setupDispatchTouchEvent(event);
+        return super.dispatchTouchEvent(event);
+    }
+
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        PowerManager powerManager = (PowerManager)MainActivity.this.getSystemService(Context.POWER_SERVICE);
+        Boolean isSceenAwake = (Build.VERSION.SDK_INT < 20? powerManager.isScreenOn():powerManager.isInteractive());
+
+        if(!isSceenAwake){
+            System.gc();
+            Sensey.getInstance().stop();
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        System.gc();
+        Sensey.getInstance().stop();
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
 
-        SharedPreferences sharedPreferences = getSharedPreferences("NoLauncherSettings", Context.MODE_PRIVATE);
         if(sharedPreferences.getBoolean("showAppBar",false)){
 
             appBar.setBackgroundColor(getResources().getColor(R.color.appBarColor));
@@ -279,4 +410,6 @@ public class MainActivity extends Activity {
     public void onBackPressed() {
 
     }
+
+
 }

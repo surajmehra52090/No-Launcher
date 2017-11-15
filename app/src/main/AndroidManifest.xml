@@ -4,8 +4,7 @@
     package="com.tanseersaji.launcher">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="com.android.alarm.permission.SET_ALARM"/>
-
+    <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
 
     <application
         android:allowBackup="true"
@@ -16,7 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name="com.tanseersaji.launcher.MainActivity"
+            android:name=".MainActivity"
             android:exported="true"
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
@@ -30,17 +29,17 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.tanseersaji.launcher.AppListActivity"
+            android:name=".AppListActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.Wallpaper" />
-        <activity android:name="com.tanseersaji.launcher.HelperActivity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen"
+        <activity
+            android:name=".HelperActivity"
             android:screenOrientation="portrait"
-            >
-
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                 <category android:name="android.intent.category.LAUNCHER" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
     </application>
