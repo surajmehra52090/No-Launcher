@@ -22,9 +22,7 @@
 
 package com.tanseersaji.launcher;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
@@ -34,8 +32,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import java.util.ArrayList;
 
 
@@ -72,7 +70,9 @@ public class AppListAdaptor extends RecyclerView.Adapter<AppListAdaptor.MyViewHo
     public void onBindViewHolder(MyViewHolder holder, int position) {
         ResolveInfo app = apps.get(position);
         holder.name.setText(app.activityInfo.loadLabel(AppListActivity.getPM()));
-        holder.icon.setImageDrawable(app.activityInfo.loadIcon(AppListActivity.getPM()));
+        Glide.with(context)
+                .load(app.activityInfo.loadIcon(AppListActivity.getPM()))
+                .into(holder.icon);
 
         holder.v.setOnLongClickListener(view -> {
             Uri packageURI = Uri.parse("package:" + apps.get(position).activityInfo.packageName);

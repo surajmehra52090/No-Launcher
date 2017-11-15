@@ -27,50 +27,50 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
-
+import android.widget.LinearLayout;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.ads.MobileAds;
-
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
+import java.util.Comparator;
 
 import static com.tanseersaji.launcher.MainActivity.openApp;
 
 public class AppListActivity extends Activity {
 
     private RecyclerView list;
-    private AppListActivity context = AppListActivity.this;
     private InterstitialAd mInterstitialAd;
     private ArrayList<ResolveInfo> apps = new ArrayList<ResolveInfo>();
-    private static AppListActivity appListActivity = new AppListActivity();
     private static PackageManager manager;
+    LinearLayout appDrawerLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_app_list);
 
+        appDrawerLayout = findViewById(R.id.appDrawerLayout);
+
         list = findViewById(R.id.list);
 
+        long t0 = System.currentTimeMillis();
         getAppsList();
-
         AppListAdaptor adaptor = new AppListAdaptor(apps);
         list.setAdapter(adaptor);
-
         GridLayoutManager glm = new GridLayoutManager(this, 3);
         list.setLayoutManager(glm);
+        Log.i("PLUM",String.valueOf((System.currentTimeMillis()-t0)));
 
         addClickListener();
-
 
         MobileAds.initialize(this, "ca-app-pub-6440435975761242~6952366562");
 
@@ -80,7 +80,14 @@ public class AppListActivity extends Activity {
                 .build());
 
 
+        appDrawerLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
     }
+
 
     private void addClickListener() {
 
@@ -121,17 +128,34 @@ public class AppListActivity extends Activity {
 
 
     private void getAppsList(){
-        long t0 = System.currentTimeMillis();
+
         manager = getPackageManager();
         Intent i = new Intent(Intent.ACTION_MAIN,null);
         i.addCategory(Intent.CATEGORY_LAUNCHER);
         ArrayList<ResolveInfo> availableActivities = (ArrayList<ResolveInfo>) manager.queryIntentActivities(i,0);
         apps = availableActivities;
-        Log.i("PLUM",String.valueOf(System.currentTimeMillis() - t0));
+        Collections.sort(apps, new Comparator<ResolveInfo>() {
+            @Override
+            public int compare(ResolveInfo r1, ResolveInfo r2) {
+                return r1.activityInfo.loadLabel(manager).toString().compareToIgnoreCase(r2.loadLabel(manager).toString());
+            }
+        });
     }
 
-    public static AppListActivity getInstance(){
-     return appListActivity;
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        PowerManager p = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+            if(!p.isInteractive()){
+                System.gc();
+            }
+        }else {
+            if(!p.isScreenOn()){
+                System.gc();
+            }
+        }
     }
 
     public static PackageManager getPM(){

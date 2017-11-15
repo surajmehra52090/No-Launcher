@@ -39,6 +39,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
@@ -101,6 +102,8 @@ public class MainActivity extends Activity {
                 openApp(MainActivity.this,"ytstudios.wall.bucket");
             }
         });
+
+        Glide.get(this).clearMemory();
 
          contactButton = (Button) findViewById(R.id.contact);
          messageButton = (Button) findViewById(R.id.message);
@@ -272,7 +275,8 @@ public class MainActivity extends Activity {
         }
     }
 
+    @Override
+    public void onBackPressed() {
 
-
-
+    }
 }
