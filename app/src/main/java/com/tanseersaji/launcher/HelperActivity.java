@@ -29,35 +29,25 @@ import android.content.SharedPreferences;
 import android.content.pm.ResolveInfo;
 import android.provider.Settings;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
-import android.widget.CompoundButton;
+
 import android.widget.ToggleButton;
 
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.MobileAds;
-import com.google.firebase.analytics.FirebaseAnalytics;
 
 public class HelperActivity extends Activity {
     ToggleButton showAppBar;
     ToggleButton showClock;
+    ToggleButton revView;
     Button settingButton;
-    private AdView mAdView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_helper);
 
-
-        MobileAds.initialize(this, "ca-app-pub-6440435975761242~6952366562");
-        mAdView = findViewById(R.id.adView);
-        AdRequest adRequest = new AdRequest.Builder().build();
-        mAdView.loadAd(adRequest);
-
         SharedPreferences sharedPreferences = getSharedPreferences("NoLauncherSettings", Context.MODE_PRIVATE);
         showAppBar = findViewById(R.id.showAppBar);
         showClock = findViewById(R.id.showClock);
+        revView = findViewById(R.id.revView);
 
         showAppBar.setTextOff("Show");
         showAppBar.setTextOn("Hide");
@@ -65,15 +55,13 @@ public class HelperActivity extends Activity {
         showClock.setTextOff("Hide");
         showClock.setTextOn("Show");
 
-        if(!sharedPreferences.contains("showClock")){
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putBoolean("showClock",true);
-            editor.apply();
-        }
+        revView.setTextOff("Reverse");
+        revView.setTextOn("Normal");
 
         if (isHomeApp()){
             showAppBar.setChecked(sharedPreferences.getBoolean("showAppBar",false));
             showClock.setChecked(sharedPreferences.getBoolean("showClock",false));
+            revView.setChecked(sharedPreferences.getBoolean("revView",false));
         }
         else{
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
@@ -97,7 +85,10 @@ public class HelperActivity extends Activity {
             editor.putBoolean("showClock",showClock.isChecked());
             editor.apply();
         });
-
+        revView.setOnCheckedChangeListener((compoundButton, b) -> {
+            editor.putBoolean("revView",revView.isChecked());
+            editor.apply();
+        });
 
         settingButton = (Button) findViewById(R.id.openPhoneSettings);
         settingButton.setOnClickListener(view -> startActivityForResult(new Intent(Settings.ACTION_SETTINGS), 0));

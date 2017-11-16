@@ -35,38 +35,26 @@ import android.os.PowerManager;
 import android.provider.AlarmClock;
 import android.provider.MediaStore;
 import android.os.Bundle;
-import android.service.notification.StatusBarNotification;
 import android.util.Log;
-import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
-import com.bumptech.glide.Glide;
 import com.github.nisrulz.sensey.Sensey;
 import com.github.nisrulz.sensey.TouchTypeDetector;
-import com.google.android.gms.ads.AdListener;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.InterstitialAd;
-import com.google.android.gms.ads.MobileAds;
-import com.google.firebase.analytics.FirebaseAnalytics;
 import com.yarolegovich.lovelydialog.LovelyInfoDialog;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import hotchemi.android.rate.AppRate;
-import hotchemi.android.rate.OnClickButtonListener;
+
 
 public class MainActivity extends Activity {
 
-    private InterstitialAd mInterstitialAd;
     Button contactButton;
     Button messageButton;
     Button googleButton;
@@ -86,8 +74,8 @@ public class MainActivity extends Activity {
     Timer t = new Timer();
     TextView timeTextView;
     TextView dateTextView;
-    FirebaseAnalytics mFirebaseAnalytics;
     SharedPreferences sharedPreferences;
+    ArrayList<View> viewsMainScreen;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,26 +85,8 @@ public class MainActivity extends Activity {
          timeTextView = findViewById(R.id.clockk);
          dateTextView = findViewById(R.id.date);
 
-        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
         sharedPreferences = getSharedPreferences("NoLauncherSettings", Context.MODE_PRIVATE);
         t.scheduleAtFixedRate(new MyTimerClass(),0,1000);
-
-
-        MobileAds.initialize(this, "ca-app-pub-6440435975761242~6952366562");
-
-        mInterstitialAd = new InterstitialAd(this);
-        mInterstitialAd.setAdUnitId("ca-app-pub-6440435975761242/3946041228");
-        mInterstitialAd.loadAd(new AdRequest.Builder()
-                .build());
-        mInterstitialAd.setAdListener(new AdListener(){
-
-            @Override
-            public void onAdClosed() {
-                mInterstitialAd.loadAd(new AdRequest.Builder()
-                        .build());
-                openApp(MainActivity.this,"ytstudios.wall.bucket");
-            }
-        });
 
          contactButton = (Button) findViewById(R.id.contact);
          messageButton = (Button) findViewById(R.id.message);
@@ -154,6 +124,11 @@ public class MainActivity extends Activity {
                 .setNotShowAgainOptionChecked(false)
                 .show();
 
+        viewsMainScreen = new ArrayList<View>();
+        for (int x = 0; x < parentLayout.getChildCount(); x++) {
+            viewsMainScreen.add(parentLayout.getChildAt(x));
+        }
+
         dateTime.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -173,11 +148,7 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View view)
             {
-                if (mInterstitialAd.isLoaded()) {
-                    mInterstitialAd.show();
-                } else {
-                    openApp(MainActivity.this,"ytstudios.wall.bucket");
-                }
+                openApp(MainActivity.this,"ytstudios.wall.bucket");
 
             }
         });
@@ -358,6 +329,21 @@ public class MainActivity extends Activity {
         else {
             dateTime.setVisibility(View.VISIBLE);
         }
+
+            if(sharedPreferences.getBoolean("revView",false)) {
+                parentLayout.removeAllViews();
+                for (int x = viewsMainScreen.size() - 1; x >= 0; x--) {
+                    parentLayout.addView(viewsMainScreen.get(x));
+                }
+            }
+            else{
+                parentLayout.removeAllViews();
+                for (int x = 0; x < viewsMainScreen.size(); x++) {
+                    parentLayout.addView(viewsMainScreen.get(x));
+                }
+
+            }
+
 
     }
 
